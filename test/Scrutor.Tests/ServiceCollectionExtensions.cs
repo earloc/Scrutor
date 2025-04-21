@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Scrutor.Tests;
 
-internal static class ServiceCollectionExtensions
+internal static partial class ServiceCollectionExtensions
 {
     public static ServiceDescriptor GetDescriptor<T>(this IServiceCollection services)
     {

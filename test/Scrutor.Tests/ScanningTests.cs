@@ -9,7 +9,27 @@ using Xunit;
 
 namespace Scrutor.Tests
 {
+    using System.CodeDom.Compiler;
     using ChildNamespace;
+
+    internal static partial class ServiceCollectionExtensions
+    {
+        [GeneratedCode("Scrutor", "6.0.0")]
+        internal static IServiceCollection ScanUsingRegistrationStrategy_None(this IServiceCollection services)
+        {
+            services.AddTransient<ITransientService, TransientService1>();
+            services.AddTransient<ITransientService, TransientService2>();
+            services.AddTransient<ITransientService, TransientService>();
+            services.AddTransient<ITransientService, UnwantedNamespace.TransientService>();
+
+            services.AddSingleton<ITransientService, TransientService1>();
+            services.AddSingleton<ITransientService, TransientService2>();
+            services.AddSingleton<ITransientService, TransientService>();
+            services.AddSingleton<ITransientService, UnwantedNamespace.TransientService>();
+
+            return services;
+        }
+    }
 
     public class ScanningTests : TestBase
     {
@@ -32,17 +52,30 @@ namespace Scrutor.Tests
             });
         }
 
-        [Fact]
-        public void UsingRegistrationStrategy_None()
+        [Scrutor]
+        private void _UsingRegistrationStrategy_None(ITypeSourceSelector scan) => scan
+            .FromAssemblyOf<ITransientService>()
+                .AddClasses(classes => classes.AssignableTo<ITransientService>())
+                    .AsImplementedInterfaces()
+                    .WithTransientLifetime()
+                .AddClasses(classes => classes.AssignableTo<ITransientService>())
+                    .AsImplementedInterfaces()
+                    .WithSingletonLifetime()
+        ;
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UsingRegistrationStrategy_None(bool useReflection)
         {
-            Collection.Scan(scan => scan
-                .FromAssemblyOf<ITransientService>()
-                    .AddClasses(classes => classes.AssignableTo<ITransientService>())
-                        .AsImplementedInterfaces()
-                        .WithTransientLifetime()
-                    .AddClasses(classes => classes.AssignableTo<ITransientService>())
-                        .AsImplementedInterfaces()
-                        .WithSingletonLifetime());
+            if (useReflection)
+            {
+                Collection.Scan(_UsingRegistrationStrategy_None);
+            }
+            else
+            {
+                Collection.ScanUsingRegistrationStrategy_None();
+            }
 
             var services = Collection.GetDescriptors<ITransientService>();
 
