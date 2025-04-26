@@ -9,12 +9,6 @@ internal sealed class GeneratorTesterBuilder<TGenerator> where TGenerator : IInc
 
     private readonly DirectoryInfo baseDirectory;
     private readonly List<FileInfo> sourceFiles = [];
-    private readonly List<FileInfo> resxFiles = [];
-    private readonly Dictionary<string, string> customToolNamespaces = [];
-    private readonly Dictionary<string, string> useParamNamesInMethodNames = [];
-
-    private readonly string? rootNamespace;
-    private readonly string? useParamNamesInMethodNamesBuildProperty;
 
     public GeneratorTesterBuilder(string baseDirectory, string? rootNamespace = null, string? useParamNamesInMethodNames = null)
     {
@@ -24,9 +18,6 @@ internal sealed class GeneratorTesterBuilder<TGenerator> where TGenerator : IInc
         {
             throw new ArgumentException($"the specified directory {this.baseDirectory.FullName} does not exist", nameof(baseDirectory));
         }
-
-        this.rootNamespace = rootNamespace;
-        useParamNamesInMethodNamesBuildProperty = useParamNamesInMethodNames;
     }
 
     public GeneratorTesterBuilder<TGenerator> WithSourceFile(string fileName)
