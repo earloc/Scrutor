@@ -233,3 +233,4 @@ _Pvt_Extensions
 
 # Rider
 .idea/
+*.g.received.cs
