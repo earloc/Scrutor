@@ -5,12 +5,12 @@ namespace Scrutor.Analyzers.Tests;
 
 internal sealed class GeneratorTesterBuilder<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
-    internal static GeneratorTesterBuilder<TGenerator> Create(string baseDirectory, string? rootNamespace = null, string? useParamNamesInMethodNames = null) => new(baseDirectory, rootNamespace, useParamNamesInMethodNames);
+    internal static GeneratorTesterBuilder<TGenerator> Create(string baseDirectory) => new(baseDirectory);
 
     private readonly DirectoryInfo baseDirectory;
     private readonly List<FileInfo> sourceFiles = [];
 
-    public GeneratorTesterBuilder(string baseDirectory, string? rootNamespace = null, string? useParamNamesInMethodNames = null)
+    public GeneratorTesterBuilder(string baseDirectory)
     {
         this.baseDirectory = new DirectoryInfo(baseDirectory);
 
