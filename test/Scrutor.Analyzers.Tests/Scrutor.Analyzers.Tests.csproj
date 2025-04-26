@@ -35,6 +35,10 @@
     </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Scrutor.Analyzers/Scrutor.Analyzers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
