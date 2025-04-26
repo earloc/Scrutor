@@ -29,6 +29,22 @@ public class Implementation : IAbstraction
 
 }
 
+public class TransientImplementation : IAbstraction
+{
+
+}
+
+public class ScopedImplementation : IAbstraction
+{
+
+}
+
+
+public class SingletonImplementation : IAbstraction
+{
+
+}
+
 [Generator(LanguageNames.CSharp)]
 public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
 {
