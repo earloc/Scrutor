@@ -19,30 +19,25 @@ public class ScriptContext
 //TODO: get rid of it
 public interface IAbstraction
 {
-
 }
 
 //TODO: get rid of it
 
 public class Implementation : IAbstraction
 {
-
 }
 
 public class TransientImplementation : IAbstraction
 {
-
 }
 
 public class ScopedImplementation : IAbstraction
 {
-
 }
 
 
 public class SingletonImplementation : IAbstraction
 {
-
 }
 
 [Generator(LanguageNames.CSharp)]
