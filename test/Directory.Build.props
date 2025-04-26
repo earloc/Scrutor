@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <!-- too much noise-->
+        <!-- <EnableNETAnalyzers>true</EnableNETAnalyzers> -->
+        <!-- <AnalysisMode>AllEnabledByDefault</AnalysisMode> -->
+        <!-- /too much noise-->
+        <AnalysisLevel>latest</AnalysisLevel>
+        <NeutralLanguage>en</NeutralLanguage>
+    </PropertyGroup>
+</Project>
