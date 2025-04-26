@@ -36,7 +36,6 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
 
             var configure = compilation.GetSymbolsWithName("Configure", SymbolFilter.Member, cancel).FirstOrDefault();
 
-
             // var member = fooType?.GetMembers().Where(x => x.GetAttributes().Any(y => y?.AttributeClass?.Name == nameof(CLSCompliantAttribute))).FirstOrDefault();
             var methodSyntax = configure as IMethodSymbol;
             var userProvidedString = "empty";
