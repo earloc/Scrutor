@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Foo;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Scrutor.Analyzers.Tests;
@@ -34,7 +35,7 @@ internal sealed class GeneratorTesterBuilder<TGenerator> where TGenerator : IInc
         return this;
     }
 
-    public IVerifiable Build(bool withDateAndTimeOnly = true)
+    public IVerifiable Build()
     {
         var syntaxTrees = sourceFiles
             .Select(x => new { Path = x.FullName, Content = File.ReadAllText(x.FullName) })
@@ -43,20 +44,14 @@ internal sealed class GeneratorTesterBuilder<TGenerator> where TGenerator : IInc
 
         var compilation = CSharpCompilation.Create(
             assemblyName: "Scrutor.Analyzers.Tests.Dynamic",
-            syntaxTrees: syntaxTrees
+            syntaxTrees: syntaxTrees,
+            references: [MetadataReference.CreateFromFile(typeof(GeneratorTesterBuilder<>).Assembly.Location)]
         );
-
-        if (withDateAndTimeOnly)
-        {
-            compilation = compilation.AddReferences(
-                MetadataReference.CreateFromFile(typeof(DateOnly).Assembly.Location)
-            );
-        }
 
         var generator = new TGenerator();
         var driver = CSharpGeneratorDriver.Create([generator]);
 
-        var generatorDriver = driver.RunGenerators(compilation.AddReferences());
+        var generatorDriver = driver.RunGenerators(compilation);
 
         return new GeneratorTester(generatorDriver, Path.Combine(baseDirectory.FullName, ".snapshots"));
     }

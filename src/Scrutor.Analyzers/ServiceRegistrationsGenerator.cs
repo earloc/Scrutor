@@ -16,29 +16,7 @@ public class ScriptContext
     public ITypeSourceSelector? Scan { get; set; }
 }
 
-//TODO: get rid of it
-public interface IAbstraction
-{
-}
 
-//TODO: get rid of it
-
-public class Implementation : IAbstraction
-{
-}
-
-public class TransientImplementation : IAbstraction
-{
-}
-
-public class ScopedImplementation : IAbstraction
-{
-}
-
-
-public class SingletonImplementation : IAbstraction
-{
-}
 
 [Generator(LanguageNames.CSharp)]
 public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
@@ -53,17 +31,29 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
             var methodSyntax = configure as IMethodSymbol;
             if (methodSyntax is not null)
             {
-               return  DiscoverServicesAsync(methodSyntax).GetAwaiter().GetResult();
+               return DiscoverServicesAsync(methodSyntax, compilation).GetAwaiter().GetResult();
             }
 
-            return [];
+            return ([], []);
         });
 
-        context.RegisterSourceOutput(hookProvider, (ctxt, serviceDescriptors) =>
+        context.RegisterSourceOutput(hookProvider, (ctxt, result) =>
         {
+
+            foreach (var diagnostic in result.Diagnostics)
+            {
+                ctxt.ReportDiagnostic(diagnostic);
+            }
+
+            if (!result.DiscoveredServices.Any())
+            {
+                return;
+            }
+
+
             var registrations = new StringBuilder();
             var indent = "                ";
-            foreach (var serviceDescriptor in serviceDescriptors)
+            foreach (var serviceDescriptor in result.DiscoveredServices)
             {
                 registrations.AppendLine($$"""
 
@@ -97,53 +87,106 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
         });
     }
 
-    private async Task<ServiceDescriptor[]> DiscoverServicesAsync(IMethodSymbol methodSymbol)
+    private async Task<(ServiceDescriptor[] DiscoveredServices, Diagnostic[] Diagnostics)> DiscoverServicesAsync(IMethodSymbol methodSymbol, Compilation compilation)
     {
         var syntaxReference = methodSymbol.DeclaringSyntaxReferences.FirstOrDefault();
         if (syntaxReference == null)
         {
-            return [];
+            return ([], []);
         }
 
         var syntaxNode = syntaxReference.GetSyntax();
         if (syntaxNode is not MethodDeclarationSyntax methodDeclaration)
         {
-            return [];
+            return ([], []);
         }
+
+        var declaringSyntaxReference = methodSymbol.DeclaringSyntaxReferences.FirstOrDefault();
+
+        var syntaxTree = syntaxReference.SyntaxTree;
+        if (syntaxTree == null)
+        {
+            return ([], []);
+        }
+
+        var root = syntaxTree.GetRoot() as CompilationUnitSyntax;
+        if (root == null)
+        {
+            return ([], []);
+        }
+
+        // Extract all namespace declarations
+        var usingDirectives = root.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Select(x => x.NamespaceOrType.ToString())
+            .ToArray();
+
+        var namespaceDeclarations = root.DescendantNodes()
+            .OfType<NamespaceDeclarationSyntax>()
+            .Select(x => x.Name.ToString())
+            .ToArray();
+
+        var fileScopedNamespaces = root.DescendantNodes()
+            .OfType<FileScopedNamespaceDeclarationSyntax>()
+            .Select(x => x.Name.ToString())
+            .ToArray();
 
         var body = methodDeclaration.Body?.ToFullString().Replace("{", "").Replace("}", "");
         if (body == null)
         {
-            return [];
+            return ([], []);
         }
 
         try
         {
             var options = ScriptOptions.Default
+                .WithReferences(compilation.References)
                 .AddReferences(typeof(ScriptContext).Assembly)
-                .AddImports("System", "Scrutor", "Scrutor.Analyzers");
+                .AddImports(namespaceDeclarations)
+                .AddImports(fileScopedNamespaces)
+                .AddImports(usingDirectives);
 
             var services = new ServiceCollection();
-            var selector = new TypeSourceSelector(); // TODO: replace it with roslyn-implementation
+            var selector = new TypeSourceSelector();
 
-                var context = new ScriptContext()
-                {
-                    Scan = selector
-                };
-                
-                await CSharpScript
-                    .EvaluateAsync(body, options, context)
-                ;
+            var context = new ScriptContext()
+            {
+                Scan = selector
+            };
+            
+            var result = await CSharpScript.EvaluateAsync(body, options, context);
 
             selector.Populate(services, RegistrationStrategy.Append);
 
-            return services.ToArray();
+            return (services.ToArray(), []);
         }
         catch (CompilationErrorException ex)
         {
             //TODO: report diagnostics
-            Debug.WriteLine($"Script compilation failed: {ex.Message}");
-            return [];
+            var descriptor = new DiagnosticDescriptor(
+                "SCRUTOR001",
+                "Script compilation error",
+                ex.Message,
+                "Usage",
+                DiagnosticSeverity.Error,
+                true,
+                ex.ToString()
+            );
+            return ([], [Diagnostic.Create(descriptor, null)]);
+        }
+        catch (Exception ex)
+        {
+            //TODO: report diagnostics
+            var descriptor = new DiagnosticDescriptor(
+                "SCRUTOR002",
+                "Script execution error",
+                ex.Message,
+                "Usage",
+                DiagnosticSeverity.Error,
+                true,
+                ex.ToString()
+            );
+            return ([], [Diagnostic.Create(descriptor, null)]);
         }
     }
 }

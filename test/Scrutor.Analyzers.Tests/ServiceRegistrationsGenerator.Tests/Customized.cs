@@ -1,11 +1,31 @@
-using Scrutor.Analyzers;
+
+using Scrutor;
 
 namespace Foo;
 
-
-public class Config
+public interface IAbstraction
 {
-    public static void Configure(Scrutor.ITypeSourceSelector Scan)
+}
+
+public class Implementation : IAbstraction
+{
+}
+
+public class TransientImplementation : IAbstraction
+{
+}
+
+public class ScopedImplementation : IAbstraction
+{
+}
+
+public class SingletonImplementation : IAbstraction
+{
+}
+
+public static class Config
+{
+    public static void Configure(ITypeSourceSelector Scan)
     {
         Scan.FromAssemblyOf<IAbstraction>()
             .AddClasses(classes => classes
