@@ -8,9 +8,9 @@
         {
             public static IServiceCollection AddServicesScrutor(this IServiceCollection services)
             {
-                services.AddTransient<Scrutor.Analyzers.IAbstraction, Scrutor.Analyzers.TransientImplementation>();
-                services.AddScoped<Scrutor.Analyzers.IAbstraction, Scrutor.Analyzers.ScopedImplementation>();
-                services.AddSingleton<Scrutor.Analyzers.IAbstraction, Scrutor.Analyzers.SingletonImplementation>();
+                services.AddTransient<Foo.IAbstraction, Foo.TransientImplementation>();
+                services.AddScoped<Foo.IAbstraction, Foo.ScopedImplementation>();
+                services.AddSingleton<Foo.IAbstraction, Foo.SingletonImplementation>();
                 return services;
             }
         }
