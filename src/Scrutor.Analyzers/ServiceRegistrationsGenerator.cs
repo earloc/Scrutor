@@ -9,15 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Scrutor.Analyzers;
 
-//TODO: move
-
-public class ScriptContext
-{
-    public ITypeSourceSelector? Scan { get; set; }
-}
-
-
-
 [Generator(LanguageNames.CSharp)]
 public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
 {
@@ -45,11 +36,6 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
                 ctxt.ReportDiagnostic(diagnostic);
             }
 
-            if (!result.DiscoveredServices.Any())
-            {
-                return;
-            }
-
 
             var registrations = new StringBuilder();
             var indent = "                ";
@@ -70,11 +56,11 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
                 using System.Collections.Generic;
                 using System.Linq;
 
-                namespace Scrutor.Analyzers
+                namespace Microsoft.Extensions.DependencyInjection
                 {
-                    public class ServiceCollectionExtensions
+                    public static class ScrutorServiceCollectionExtensions
                     {
-                        public static IServiceCollection AddServicesScrutor(this IServiceCollection services)
+                        public static IServiceCollection AddScannedServices(this IServiceCollection services)
                         {
                             {{registrations}}
                             return services;
