@@ -6,21 +6,45 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
-      <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    </ItemGroup>
-
     <ItemGroup>
       <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" GeneratePathProperty="true">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.13.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.13.0" GeneratePathProperty="true" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="4.13.0" GeneratePathProperty="true" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+      <PackageReference Include="Scrutor" Version="6.0.1" GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="../Scrutor/Scrutor.csproj" />
+      <!-- <ProjectReference Include="../Scrutor/Scrutor.csproj" /> -->
     </ItemGroup>
+
+<!--
+  https://github.com/dotnet/roslyn/discussions/47517
+  https://turnerj.com/blog/the-pain-points-of-csharp-source-generators
+-->
+    <PropertyGroup>  
+      <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+    </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGScrutor)\lib\netstandard2.0\Scrutor.dll" IncludeRuntimeDependency="true" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_DependencyInjection_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_CodeAnalysis_CSharp_Scripting)\lib\netstandard2.0\Microsoft.CodeAnalysis.CSharp.Scripting.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_CodeAnalysis_Scripting_Common)\lib\netstandard2.0\Microsoft.CodeAnalysis.Scripting.dll" IncludeRuntimeDependency="false" />
+      
+      <!-- Pack both our Assemlby and the project-references into the generated Nuget Package -->
+      <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+      <!-- <None Include="$(OutputPath)\Scrutor.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" /> -->
+
+      <!-- Pack both our Assemlby and the package-references into the generated Nuget Package -->
+      <None Include="$(PKGScrutor)\lib\netstandard2.0\Scrutor.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+      <None Include="$(PKGMicrosoft_Extensions_DependencyInjection_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+      <None Include="$(PKGMicrosoft_CodeAnalysis_CSharp_Scripting)\lib\netstandard2.0\Microsoft.CodeAnalysis.CSharp.Scripting.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+      <None Include="$(PKGMicrosoft_CodeAnalysis_Scripting_Common)\lib\netstandard2.0\Microsoft.CodeAnalysis.Scripting.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Scrutor.Analyzers/Scrutor.Analyzers.csproj" />
+    <!-- <ProjectReference Include="../../src/Scrutor/Scrutor.csproj" /> -->
   </ItemGroup>
 
   <ItemGroup>

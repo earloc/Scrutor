@@ -2,11 +2,11 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    namespace Scrutor.Analyzers
+    namespace Microsoft.Extensions.DependencyInjection
     {
-        public class ServiceCollectionExtensions
+        public static class ScrutorServiceCollectionExtensions
         {
-            public static IServiceCollection AddServicesScrutor(this IServiceCollection services)
+            public static IServiceCollection AddScannedServices(this IServiceCollection services)
             {
                 services.AddTransient<Foo.IAbstraction, Foo.TransientImplementation>();
                 services.AddScoped<Foo.IAbstraction, Foo.ScopedImplementation>();

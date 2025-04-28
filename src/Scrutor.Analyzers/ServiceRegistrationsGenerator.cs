@@ -123,11 +123,24 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
             return ([], []);
         }
 
+        var refs = compilation.References.Where(x => x.Display.Contains("Scrutor")).ToArray();
+
+        var referenceWarnings = refs.Select(x => new DiagnosticDescriptor(
+                "SCRUTOR004",
+                "Reference warning",
+                x.Display ?? "unkonw",
+                "Usage",
+                DiagnosticSeverity.Warning,
+                true
+        ))
+        .Select(x => Diagnostic.Create(x, null))
+        .ToArray();
+
         try
         {
             var options = ScriptOptions.Default
-                .WithReferences(compilation.References)
-                .AddReferences(typeof(ScriptContext).Assembly)
+                .WithReferences(refs)
+                // .WithReferences(typeof(ScriptContext).Assembly)
                 .AddImports(namespaceDeclarations)
                 .AddImports(fileScopedNamespaces)
                 .AddImports(usingDirectives);
@@ -137,7 +150,7 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
 
             var context = new ScriptContext()
             {
-                Scan = selector
+                scan = selector
             };
             
             var result = await CSharpScript.EvaluateAsync(body, options, context);
@@ -158,7 +171,7 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
                 true,
                 ex.ToString()
             );
-            return ([], [Diagnostic.Create(descriptor, null)]);
+            return ([], [..referenceWarnings, Diagnostic.Create(descriptor, null)]);
         }
         catch (Exception ex)
         {
@@ -172,7 +185,7 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
                 true,
                 ex.ToString()
             );
-            return ([], [Diagnostic.Create(descriptor, null)]);
+            return ([], [..referenceWarnings, Diagnostic.Create(descriptor, null)]);
         }
     }
 }
