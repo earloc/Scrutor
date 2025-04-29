@@ -36,7 +36,6 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
                 ctxt.ReportDiagnostic(diagnostic);
             }
 
-
             var registrations = new StringBuilder();
             var indent = "                ";
             foreach (var serviceDescriptor in result.DiscoveredServices)
@@ -140,7 +139,7 @@ public sealed class ServiceRegistrationsGenerator : IIncrementalGenerator
         {
             var options = ScriptOptions.Default
                 .WithReferences(refs)
-                // .WithReferences(typeof(ScriptContext).Assembly)
+                //.WithReferences(typeof(ScriptContext).Assembly)
                 .AddImports(namespaceDeclarations)
                 .AddImports(fileScopedNamespaces)
                 .AddImports(usingDirectives);
